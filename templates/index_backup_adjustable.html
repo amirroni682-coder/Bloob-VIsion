@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLOB VISION</title>
+<style>
+:root{--bg:#070a0f;--panel:rgba(15,20,28,.88);--border:rgba(255,255,255,.08);--cyan:#64eaff;--green:#7dff9d;--magenta:#ff72dc;--amber:#ffca72;--red:#ff6c7d;--text:#f3f7fa}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%}
+body{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 15% 0%,rgba(100,234,255,.08),transparent 28%),radial-gradient(circle at 88% 10%,rgba(255,114,220,.07),transparent 24%),linear-gradient(180deg,#0a0e13 0%,#070a0f 100%);color:var(--text);overflow:hidden}
+button,input{font:inherit}
+.app{display:flex;width:100vw;height:100vh}
+.sidebar{width:270px;flex-shrink:0;padding:22px 16px;background:rgba(6,9,13,.95);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.brand-wrap{padding:8px 8px 18px;border-bottom:1px solid rgba(255,255,255,.05)}
+.brand{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:850;letter-spacing:2.6px;color:var(--cyan)}
+.brand-mark{width:28px;height:28px;border:1px solid rgba(100,234,255,.35);border-radius:8px;display:grid;place-items:center}
+.brand-mark:before{content:"";width:8px;height:8px;border:1px solid var(--cyan);border-radius:50%;box-shadow:0 0 12px rgba(100,234,255,.65)}
+.brand-sub{margin:8px 0 0 38px;font-size:9px;letter-spacing:1.7px;color:#5e6972}
+.section{padding:18px 8px 0}.section-title{margin-bottom:10px;font-size:9px;letter-spacing:1.7px;color:#5f6b74;font-weight:800}
+.source-box,.effect-box{display:grid;gap:7px}
+.source-option,.effect-option{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid transparent;border-radius:9px;color:#98a4ac;font-size:11px;cursor:pointer}
+.source-option:hover,.effect-option:hover{background:rgba(255,255,255,.025);color:#e7edf1}
+.source-option input,.effect-option input{accent-color:var(--cyan)}
+.source-option.active{background:rgba(100,234,255,.07);border-color:rgba(100,234,255,.18);color:#e7edf1}
+.file-panel{display:none;margin-top:11px;padding:10px;border:1px solid rgba(100,234,255,.12);border-radius:10px;background:rgba(100,234,255,.025)}
+.file-input{width:100%;padding:9px;border:1px dashed rgba(100,234,255,.25);border-radius:8px;background:rgba(255,255,255,.018);color:#9aa7ae;font-size:10px;cursor:pointer}
+.file-name{margin-top:9px;font-size:9px;line-height:1.5;color:#66747d;word-break:break-word}.file-name.ready{color:var(--green)}
+.video-meta{margin-top:5px;font:9px ui-monospace,SFMono-Regular,Menlo,monospace;color:#56646d}
+.camera-button,.process-button{width:100%;padding:11px 12px;border:1px solid rgba(100,234,255,.22);border-radius:10px;color:var(--text);background:linear-gradient(180deg,rgba(100,234,255,.10),rgba(100,234,255,.04));cursor:pointer;font-weight:700;font-size:11px;letter-spacing:.6px}
+.camera-button:hover,.process-button:hover:not(:disabled){border-color:rgba(100,234,255,.55);transform:translateY(-1px)}.process-button:disabled{opacity:.32;cursor:not-allowed}
+.slider-section{display:grid;gap:14px}.slider-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}.slider-name{font-size:9px;letter-spacing:1.2px;font-weight:800;color:#93a0a8}.slider-value{color:var(--cyan);font:10px ui-monospace,SFMono-Regular,Menlo,monospace}
+input[type=range]{appearance:none;width:100%;height:3px;border-radius:99px;background:#252e36;outline:none}input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;border-radius:50%;background:var(--cyan);border:2px solid #091015;box-shadow:0 0 0 1px rgba(100,234,255,.35)}
+.reset-button{margin-top:18px;width:100%;padding:9px 10px;background:rgba(255,255,255,.025);border:1px solid var(--border);color:#87939b;border-radius:9px;font-size:10px;cursor:pointer}.reset-button:hover{color:#fff;background:rgba(255,255,255,.055)}
+.main{flex:1;min-width:0;padding:22px;display:flex;flex-direction:column;gap:14px;overflow:auto}
+.topbar{display:flex;justify-content:space-between;align-items:center}.eyebrow{font-size:9px;letter-spacing:1.9px;color:#58636b;font-weight:800}.page-title{margin-top:4px;font-size:clamp(23px,2.4vw,34px);line-height:1;font-weight:850}.page-title span{color:var(--cyan)}
+.top-status{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--border);border-radius:99px;background:rgba(255,255,255,.025);color:#8b969e;font-size:10px}.status-dot{width:7px;height:7px;border-radius:50%;background:#4e555a}.status-dot.active{background:var(--green);box-shadow:0 0 13px rgba(125,255,157,.72)}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:14px;min-height:0}.viewer-panel{min-width:0;display:flex;flex-direction:column;gap:10px}
+.camera-card{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:#05070a;box-shadow:0 28px 80px rgba(0,0,0,.42)}
+#cameraVideo,#trackingOutput{position:absolute;inset:0;width:100%;height:100%}#cameraVideo{object-fit:contain;background:#05070a}.camera-mode-camera{transform:scaleX(-1)}#trackingOutput{display:none;object-fit:contain;z-index:2}
+.preview-topline{position:absolute;top:12px;left:12px;right:12px;z-index:8;display:flex;justify-content:space-between;pointer-events:none}.preview-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid rgba(255,255,255,.10);border-radius:8px;background:rgba(5,9,13,.56);font:9px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:1px;color:#a5b0b7}.mini-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px rgba(100,234,255,.65)}
+.preview-grid{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:.13;background-image:linear-gradient(rgba(100,234,255,.28) 1px,transparent 1px),linear-gradient(90deg,rgba(100,234,255,.28) 1px,transparent 1px);background-size:56px 56px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent 75%)}
+.corner-tl,.corner-tr,.corner-bl,.corner-br{position:absolute;width:22px;height:22px;z-index:6;border-color:rgba(100,234,255,.6);pointer-events:none}.corner-tl{left:13px;top:46px;border-left:1px solid;border-top:1px solid}.corner-tr{right:13px;top:46px;border-right:1px solid;border-top:1px solid}.corner-bl{left:13px;bottom:13px;border-left:1px solid;border-bottom:1px solid}.corner-br{right:13px;bottom:13px;border-right:1px solid;border-bottom:1px solid}
+.placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:7;color:#57626a;font-size:11px}.placeholder-icon{width:54px;height:54px;display:grid;place-items:center;border:1px solid rgba(100,234,255,.12);border-radius:14px;font-size:24px;color:#66737b}
+.video-controls,.full-process-panel,.recording-panel{padding:10px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.025)}.video-controls,.full-process-panel{display:none}.video-controls.visible,.full-process-panel.visible{display:block}
+.video-control-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.control-button{border:1px solid rgba(255,255,255,.12);background:rgba(4,8,12,.72);color:#eaf0f3;padding:9px 12px;border-radius:8px;font-size:10px;font-weight:750;cursor:pointer}.control-button:disabled{opacity:.28;cursor:not-allowed}.control-button.download{color:var(--cyan);border-color:rgba(100,234,255,.25)}.control-button.record{color:#ff7a87;border-color:rgba(255,92,108,.25)}.control-button.recording{color:#fff;background:rgba(180,26,42,.60)}
+.time-label{min-width:105px;color:#819099;font:10px ui-monospace,SFMono-Regular,Menlo,monospace}.timeline{flex:1;min-width:160px}.full-process-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.process-info{font-size:9px;color:#74818a;line-height:1.5}
+.progress-wrap{display:none;margin-top:10px}.progress-wrap.visible{display:block}.progress-head,.progress-meta{display:flex;justify-content:space-between;font:9px ui-monospace,SFMono-Regular,Menlo,monospace;color:#74818a}.progress-head{margin-bottom:6px}.progress-meta{margin-top:6px;color:#59666f}.progress-track{width:100%;height:5px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}.progress-bar{width:0;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .25s}
+.recording-panel{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.record-timer{display:flex;align-items:center;gap:7px;min-width:78px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:rgba(3,7,10,.65);color:#77838c;font:10px ui-monospace,SFMono-Regular,Menlo,monospace}.record-dot{width:6px;height:6px;border-radius:50%;background:#4e555a}.record-timer.active{color:#ff808c}.record-timer.active .record-dot{background:#ff5367;box-shadow:0 0 11px rgba(255,83,103,.75)}.record-status{margin-left:auto;color:#69757d;font:9px ui-monospace,SFMono-Regular,Menlo,monospace}.record-status.ready{color:var(--green)}
+.inspector{min-width:0;display:flex;flex-direction:column;gap:10px}.glass-card{border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,rgba(16,21,29,.88),rgba(10,14,20,.88));overflow:hidden}.card-head{display:flex;justify-content:space-between;align-items:center;padding:12px 13px;border-bottom:1px solid rgba(255,255,255,.05)}.card-head .title{font-size:9px;font-weight:850;letter-spacing:1.5px;color:#9aa5ad}.card-head .tag{font:8px ui-monospace,SFMono-Regular,Menlo,monospace;color:#5f6d76}.stat-row{display:grid;grid-template-columns:1fr auto;padding:11px 13px;background:rgba(255,255,255,.015)}.stat-row+.stat-row{border-top:1px solid rgba(255,255,255,.04)}.stat-name{font-size:9px;letter-spacing:1px;color:#69757e}.stat-value{font-size:15px;font-weight:850}.green{color:var(--green)}.magenta{color:var(--magenta)}.amber{color:var(--amber)}.cyan{color:var(--cyan)}.system-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.04)}.system-cell{padding:11px;background:rgba(7,11,16,.86);min-height:70px}.cell-label{font-size:8px;letter-spacing:1px;color:#5e6a73}.cell-value{margin-top:7px;font-size:11px;font-weight:800}.cell-value.online{color:var(--green)}.cell-value.idle{color:#a6b0b6}.tracker-note{padding:12px 13px;font-size:9px;line-height:1.7;color:#6f7b84;border-top:1px solid rgba(255,255,255,.05)}
+.metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}.metric{padding:11px 12px;border:1px solid var(--border);border-radius:11px;background:rgba(255,255,255,.025)}.metric-label{font-size:8px;letter-spacing:1.2px;color:#5d6972}.metric-value{margin-top:6px;font-size:16px;font-weight:850}#recordCanvas{display:none}
+@media(max-width:1180px){.workspace{grid-template-columns:1fr}.inspector{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:860px){body{overflow:auto}.app{flex-direction:column;height:auto;min-height:100vh}.sidebar{width:100%;border-right:0;border-bottom:1px solid var(--border)}.inspector{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand-wrap"><div class="brand"><span class="brand-mark"></span>BLOB VISION</div><div class="brand-sub">REALTIME COMPUTER VISION</div></div>
+
+  <div class="section">
+    <div class="section-title">INPUT SOURCE</div>
+    <div class="source-box">
+      <label id="cameraSourceOption" class="source-option active"><input type="radio" name="sourceMode" value="camera" checked><span>LIVE CAMERA</span></label>
+      <label id="fileSourceOption" class="source-option"><input type="radio" name="sourceMode" value="file"><span>MP4 VIDEO</span></label>
+    </div>
+    <div class="file-panel" id="filePanel">
+      <input class="file-input" id="videoFileInput" type="file" accept="video/mp4,video/*">
+      <div class="file-name" id="fileName">No video selected</div>
+      <div class="video-meta" id="videoMeta">Choose MP4 VIDEO above.</div>
+    </div>
+  </div>
+
+  <div class="section"><div class="section-title">CAMERA</div><button class="camera-button" id="openCameraButton" type="button">OPEN LIVECAM</button></div>
+
+  <div class="section">
+    <div class="section-title">TRACKING EFFECT</div>
+    <div class="effect-box">
+      <label class="effect-option"><input type="radio" name="effect" value="low"><span>Low</span></label>
+      <label class="effect-option"><input type="radio" name="effect" value="medium" checked><span>Medium</span></label>
+      <label class="effect-option"><input type="radio" name="effect" value="high"><span>High</span></label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">OVERLAY CONTROL</div>
+    <div class="slider-section">
+      <div><div class="slider-header"><span class="slider-name">LINE SIZE</span><span class="slider-value" id="lineValue">2 px</span></div><input id="lineSlider" type="range" min="1" max="8" step="1" value="2"></div>
+      <div><div class="slider-header"><span class="slider-name">BOX SIZE</span><span class="slider-value" id="boxValue">2 px</span></div><input id="boxSlider" type="range" min="1" max="8" step="1" value="2"></div>
+      <div><div class="slider-header"><span class="slider-name">TEXT SIZE</span><span class="slider-value" id="textValue">0.45x</span></div><input id="textSlider" type="range" min="0.25" max="1" step="0.05" value="0.45"></div>
+    </div>
+    <button class="reset-button" id="resetOverlayButton" type="button">RESET OVERLAY</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar"><div><div class="eyebrow">BLOB VISION / TRACKING CONSOLE</div><div class="page-title">Live <span>Tracking</span></div></div><div class="top-status"><span id="statusDot" class="status-dot"></span><span id="statusText">CAMERA OFFLINE</span></div></div>
+
+  <div class="workspace">
+    <section class="viewer-panel">
+      <div class="camera-card">
+        <video id="cameraVideo" autoplay playsinline muted preload="metadata"></video>
+        <img id="trackingOutput" alt="Tracking Output">
+        <div class="preview-grid"></div>
+        <div class="preview-topline"><div class="preview-chip"><span class="mini-dot"></span>LIVE TRACKER</div><div class="preview-chip" id="previewMode">CAMERA / MEDIUM</div></div>
+        <div class="corner-tl"></div><div class="corner-tr"></div><div class="corner-bl"></div><div class="corner-br"></div>
+        <div id="placeholder" class="placeholder"><div class="placeholder-icon">◉</div><div id="placeholderText">Camera is not running</div></div>
+      </div>
+
+      <div class="video-controls" id="videoControls">
+        <div class="video-control-row">
+          <button class="control-button" id="playVideoButton" type="button">▶ PLAY</button>
+          <button class="control-button" id="pauseVideoButton" type="button">⏸ PAUSE</button>
+          <button class="control-button" id="restartVideoButton" type="button">↺ RESTART</button>
+          <span class="time-label" id="videoTimeLabel">00:00 / 00:00</span>
+          <input class="timeline" id="videoTimeline" type="range" min="0" max="0" step="0.01" value="0">
+        </div>
+      </div>
+
+      <div class="full-process-panel" id="fullProcessPanel">
+        <div class="full-process-top">
+          <button class="process-button" id="fullProcessButton" type="button" disabled>⚡ PROCESS FULL VIDEO</button>
+          <div class="process-info">Proses seluruh MP4 di engine Python, lalu buat satu file MP4 final yang bisa diunduh.</div>
+        </div>
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-head"><span id="progressPhase">READY</span><span id="progressPercent">0%</span></div>
+          <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+          <div class="progress-meta"><span id="progressFrame">0 / 0 frames</span><span id="progressTime">0s</span></div>
+        </div>
+      </div>
+
+      <div class="recording-panel">
+        <button class="control-button" id="recordButton" type="button" disabled>● RECORD</button>
+        <button class="control-button" id="stopRecordButton" type="button" disabled>■ STOP RECORDING</button>
+        <button class="control-button download" id="downloadButton" type="button" disabled>↓ DOWNLOAD MP4</button>
+        <div class="record-timer" id="recordTimerBox"><span class="record-dot"></span><span id="recordTimer">00:00</span></div>
+        <div class="record-status" id="recordStatus">READY</div>
+      </div>
+    </section>
+
+    <aside class="inspector">
+      <div class="glass-card"><div class="card-head"><span class="title">TRACKING OVERVIEW</span><span class="tag">REALTIME</span></div>
+        <div class="stat-row"><span class="stat-name">FACE</span><span class="stat-value green" id="faceSide">0</span></div>
+        <div class="stat-row"><span class="stat-name">HAND</span><span class="stat-value magenta" id="handSide">0</span></div>
+        <div class="stat-row"><span class="stat-name">OBJECT</span><span class="stat-value amber" id="objectSide">0</span></div>
+        <div class="stat-row"><span class="stat-name">FPS</span><span class="stat-value cyan" id="fpsSide">0.0</span></div>
+      </div>
+      <div class="glass-card"><div class="card-head"><span class="title">SYSTEM</span><span class="tag">STATUS</span></div>
+        <div class="system-grid">
+          <div class="system-cell"><div class="cell-label">ENGINE</div><div class="cell-value online" id="engineSide">READY</div></div>
+          <div class="system-cell"><div class="cell-label">SOURCE</div><div class="cell-value idle" id="sourceSide">CAMERA</div></div>
+          <div class="system-cell"><div class="cell-label">TRACKING</div><div class="cell-value idle" id="trackingSide">IDLE</div></div>
+          <div class="system-cell"><div class="cell-label">EFFECT</div><div class="cell-value" id="effectSide" style="color:var(--magenta)">MEDIUM</div></div>
+        </div>
+        <div class="tracker-note">LIVE CAMERA and MP4 use the same tracking engine. Full MP4 processing runs locally through the Python engine.</div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="metrics">
+    <div class="metric"><div class="metric-label">SOURCE</div><div class="metric-value" id="sourceInfo">CAMERA</div></div>
+    <div class="metric"><div class="metric-label">FPS</div><div class="metric-value cyan" id="fpsInfo">0.0</div></div>
+    <div class="metric"><div class="metric-label">FACE</div><div class="metric-value green" id="faceInfo">0</div></div>
+    <div class="metric"><div class="metric-label">HAND</div><div class="metric-value magenta" id="handInfo">0</div></div>
+    <div class="metric"><div class="metric-label">OBJECT</div><div class="metric-value amber" id="objectInfo">0</div></div>
+    <div class="metric"><div class="metric-label">TRACKING</div><div class="metric-value cyan" id="trackingInfo">IDLE</div></div>
+  </div>
+
+  <canvas id="recordCanvas" width="640" height="360"></canvas>
+</main>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  let sourceMode="camera";
+  let stream=null;
+  let fileUrl=null;
+  let currentVideoLoaded=false;
+  let running=false;
+  let processing=false;
+  let canvas=null;
+  let ctx=null;
+  let outputUrl=null;
+  let effect="medium";
+  let statsTimeout=null;
+
+  let recording=false;
+  let mediaRecorder=null;
+  let recordedChunks=[];
+  let recordingUrl=null;
+  let recordingInterval=null;
+  let recordStartTime=null;
+  let recordCanvas=null;
+  let recordCtx=null;
+  let converting=false;
+
+  let fullVideoJobId=null;
+  let fullVideoStatusTimeout=null;
+  let fullVideoBusy=false;
+
+  const video=document.getElementById("cameraVideo");
+  const output=document.getElementById("trackingOutput");
+  const placeholder=document.getElementById("placeholder");
+  const placeholderText=document.getElementById("placeholderText");
+  const filePanel=document.getElementById("filePanel");
+  const fileInput=document.getElementById("videoFileInput");
+  const fileName=document.getElementById("fileName");
+  const videoMeta=document.getElementById("videoMeta");
+  const videoControls=document.getElementById("videoControls");
+  const timeline=document.getElementById("videoTimeline");
+  const timeLabel=document.getElementById("videoTimeLabel");
+  const fullPanel=document.getElementById("fullProcessPanel");
+  const fullButton=document.getElementById("fullProcessButton");
+  const progressWrap=document.getElementById("progressWrap");
+  const progressBar=document.getElementById("progressBar");
+  const progressPhase=document.getElementById("progressPhase");
+  const progressPercent=document.getElementById("progressPercent");
+  const progressFrame=document.getElementById("progressFrame");
+  const progressTime=document.getElementById("progressTime");
+  const recordButton=document.getElementById("recordButton");
+  const stopRecordButton=document.getElementById("stopRecordButton");
+  const downloadButton=document.getElementById("downloadButton");
+  const recordTimerElement=document.getElementById("recordTimer");
+  const recordTimerBox=document.getElementById("recordTimerBox");
+  const recordStatus=document.getElementById("recordStatus");
+  const previewMode=document.getElementById("previewMode");
+  const cameraSourceOption=document.getElementById("cameraSourceOption");
+  const fileSourceOption=document.getElementById("fileSourceOption");
+  const openCameraButton=document.getElementById("openCameraButton");
+  const playVideoButton=document.getElementById("playVideoButton");
+  const pauseVideoButton=document.getElementById("pauseVideoButton");
+  const restartVideoButton=document.getElementById("restartVideoButton");
+  const resetOverlayButton=document.getElementById("resetOverlayButton");
+
+  function setRecordStatus(text,type=""){
+    recordStatus.textContent=text;
+    recordStatus.className="record-status"+(type?` ${type}`:"");
+  }
+
+  function formatTime(seconds){
+    if(!Number.isFinite(seconds)||seconds<0)return "00:00";
+    const t=Math.floor(seconds);
+    const m=Math.floor(t/60);
+    const sec=t%60;
+    return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+  }
+
+  function updateSliderLabels(){
+    document.getElementById("lineValue").textContent=`${document.getElementById("lineSlider").value} px`;
+    document.getElementById("boxValue").textContent=`${document.getElementById("boxSlider").value} px`;
+    document.getElementById("textValue").textContent=`${Number(document.getElementById("textSlider").value).toFixed(2)}x`;
+  }
+
+  ["lineSlider","boxSlider","textSlider"].forEach(id=>document.getElementById(id).addEventListener("input",updateSliderLabels));
+  updateSliderLabels();
+
+  function resetSettings(){
+    document.getElementById("lineSlider").value=2;
+    document.getElementById("boxSlider").value=2;
+    document.getElementById("textSlider").value=0.45;
+    updateSliderLabels();
+  }
+
+  function updateSourceActiveUI(){
+    cameraSourceOption.classList.toggle("active",sourceMode==="camera");
+    fileSourceOption.classList.toggle("active",sourceMode==="file");
+    const radio=document.querySelector(`input[name="sourceMode"][value="${sourceMode}"]`);
+    if(radio)radio.checked=true;
+  }
+
+  document.querySelectorAll('input[name="effect"]').forEach(r=>r.addEventListener("change",()=>{
+    effect=r.value;
+    const fx=effect.toUpperCase();
+    document.getElementById("effectSide").textContent=fx;
+    previewMode.textContent=sourceMode==="camera"?`CAMERA / ${fx}`:`MP4 / ${fx}`;
+  }));
+
+  document.querySelectorAll('input[name="sourceMode"]').forEach(r=>r.addEventListener("change",()=>{
+    if(r.checked){
+      if(r.value==="file")switchToFileMode();
+      else switchToCameraMode();
+    }
+  }));
+
+  function initCanvases(){
+    if(!canvas){
+      canvas=document.createElement("canvas");
+      canvas.width=640;
+      canvas.height=360;
+      ctx=canvas.getContext("2d",{willReadFrequently:true});
+    }
+    if(!recordCanvas){
+      recordCanvas=document.getElementById("recordCanvas");
+      recordCtx=recordCanvas.getContext("2d");
+    }
+  }
+
+  async function resetTracking(){
+    try{await fetch("/reset_tracking",{method:"POST"});}
+    catch(e){console.warn("reset_tracking:",e);}
+  }
+
+  function setActive(){
+    document.getElementById("statusDot").classList.add("active");
+    document.getElementById("statusText").textContent=sourceMode==="camera"?"CAMERA ONLINE":"MP4 ACTIVE";
+  }
+
+  function setSource(source){
+    document.getElementById("sourceInfo").textContent=source;
+    document.getElementById("sourceSide").textContent=source;
+  }
+
+  function setTracking(text){
+    document.getElementById("trackingInfo").textContent=text;
+    document.getElementById("trackingSide").textContent=text;
+    document.getElementById("trackingSide").className=text==="ACTIVE"?"cell-value online":"cell-value";
+  }
+
+  function switchToCameraMode(){
+    if(fullVideoBusy){
+      updateSourceActiveUI();
+      return;
+    }
+    if(recording)stopRecording();
+    video.pause();
+    sourceMode="camera";
+    updateSourceActiveUI();
+    filePanel.style.display="none";
+    videoControls.classList.remove("visible");
+    fullPanel.classList.remove("visible");
+    previewMode.textContent=`CAMERA / ${effect.toUpperCase()}`;
+    setSource("CAMERA");
+    video.classList.add("camera-mode-camera");
+    placeholderText.textContent="Camera is not running";
+    if(!stream){
+      placeholder.style.display="flex";
+      output.style.display="none";
+      recordButton.disabled=true;
+    }
+  }
+
+  function switchToFileMode(){
+    if(fullVideoBusy){
+      updateSourceActiveUI();
+      return;
+    }
+    if(recording)stopRecording();
+    if(stream)stopCamera();
+    sourceMode="file";
+    updateSourceActiveUI();
+    filePanel.style.display="block";
+    videoControls.classList.add("visible");
+    fullPanel.classList.add("visible");
+    previewMode.textContent=`MP4 / ${effect.toUpperCase()}`;
+    setSource("MP4");
+    video.classList.remove("camera-mode-camera");
+    placeholderText.textContent=currentVideoLoaded?"Press PLAY to start tracking":"Select an MP4 video";
+    if(!currentVideoLoaded){
+      placeholder.style.display="flex";
+      output.style.display="none";
+      recordButton.disabled=true;
+      fullButton.disabled=true;
+    }
+  }
+
+  fileSourceOption.addEventListener("click",()=>switchToFileMode());
+  cameraSourceOption.addEventListener("click",()=>switchToCameraMode());
+
+  fileInput.addEventListener("change",e=>{
+    const f=e.target.files&&e.target.files[0];
+    if(!f)return;
+    if(!f.type.startsWith("video/")){
+      alert("Pilih file video yang valid.");
+      return;
+    }
+    if(fullVideoBusy){
+      alert("Tunggu proses selesai.");
+      return;
+    }
+    video.pause();
+    running=false;
+    processing=false;
+    if(statsTimeout){clearTimeout(statsTimeout);statsTimeout=null;}
+    if(fileUrl)URL.revokeObjectURL(fileUrl);
+    fileUrl=URL.createObjectURL(f);
+    currentVideoLoaded=false;
+    fileName.textContent=f.name;
+    fileName.className="file-name ready";
+    videoMeta.textContent=`${(f.size/1048576).toFixed(1)} MB • loading...`;
+    video.srcObject=null;
+    video.src=fileUrl;
+    video.load();
+    placeholder.style.display="flex";
+    placeholderText.textContent="Loading video...";
+    output.style.display="none";
+    fullButton.disabled=true;
+    resetFullProgress();
+    setRecordStatus("READY");
+  });
+
+  video.addEventListener("loadedmetadata",()=>{
+    if(sourceMode!=="file")return;
+    currentVideoLoaded=true;
+    timeline.max=video.duration||0;
+    timeline.value=0;
+    timeLabel.textContent=`00:00 / ${formatTime(video.duration||0)}`;
+    videoMeta.textContent=`${formatTime(video.duration||0)} • ready`;
+    placeholder.style.display="flex";
+    placeholderText.textContent="Press PLAY or PROCESS FULL VIDEO";
+    fullButton.disabled=false;
+    recordButton.disabled=true;
+  });
+
+  video.addEventListener("error",()=>{
+    if(sourceMode!=="file")return;
+    videoMeta.textContent="Unable to load this video";
+    currentVideoLoaded=false;
+    fullButton.disabled=true;
+    console.error("Video load error",video.error);
+  });
+
+  video.addEventListener("timeupdate",()=>{
+    if(sourceMode!=="file")return;
+    timeline.value=video.currentTime||0;
+    timeLabel.textContent=`${formatTime(video.currentTime||0)} / ${formatTime(video.duration||0)}`;
+  });
+
+  video.addEventListener("play",()=>{if(sourceMode==="file")beginFileTracking();});
+
+  video.addEventListener("pause",()=>{
+    if(sourceMode!=="file")return;
+    if(!fullVideoBusy){
+      running=false;
+      processing=false;
+      if(statsTimeout){clearTimeout(statsTimeout);statsTimeout=null;}
+      if(currentVideoLoaded)setTracking("PAUSED");
+    }
+  });
+
+  video.addEventListener("ended",()=>{
+    if(sourceMode!=="file")return;
+    running=false;
+    processing=false;
+    if(statsTimeout){clearTimeout(statsTimeout);statsTimeout=null;}
+    setTracking("FINISHED");
+    setRecordStatus(recordingUrl?"MP4 READY":"READY",recordingUrl?"ready":"");
+  });
+
+  timeline.addEventListener("input",()=>{
+    if(sourceMode==="file"&&Number.isFinite(video.duration))video.currentTime=Number(timeline.value);
+  });
+
+  async function playUploadedVideo(){
+    if(sourceMode!=="file"||!currentVideoLoaded){alert("Pilih MP4 terlebih dahulu.");return;}
+    if(fullVideoBusy){alert("Full video processing sedang berjalan.");return;}
+    try{await video.play();}
+    catch(e){alert(e.message);}
+  }
+
+  function pauseUploadedVideo(){if(sourceMode==="file")video.pause();}
+
+  async function restartUploadedVideo(){
+    if(sourceMode!=="file"||!currentVideoLoaded)return;
+    await resetTracking();
+    video.currentTime=0;
+    try{await video.play();}catch(e){alert(e.message);}
+  }
+
+  async function beginFileTracking(){
+    if(sourceMode!=="file"||!currentVideoLoaded||fullVideoBusy)return;
+    initCanvases();
+    await resetTracking();
+    running=true;
+    processing=false;
+    placeholder.style.display="none";
+    output.style.display="none";
+    setActive();
+    setTracking("ACTIVE");
+    recordButton.disabled=false;
+    requestAnimationFrame(processLoop);
+    updateStats();
+  }
+
+  async function openCamera(){
+    if(fullVideoBusy){alert("Tunggu proses selesai.");return;}
+    sourceMode="camera";
+    updateSourceActiveUI();
+    switchToCameraMode();
+    if(running&&stream)return;
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+      video.srcObject=stream;
+      video.removeAttribute("src");
+      video.classList.add("camera-mode-camera");
+      video.muted=true;
+      video.playsInline=true;
+      await video.play();
+      initCanvases();
+      await resetTracking();
+      running=true;
+      processing=false;
+      placeholder.style.display="none";
+      output.style.display="none";
+      recordButton.disabled=false;
+      setSource("CAMERA");
+      setActive();
+      setTracking("ACTIVE");
+      requestAnimationFrame(processLoop);
+      updateStats();
+    }catch(e){
+      if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+      alert(`Tidak bisa membuka kamera.\n\n${e.name}\n${e.message}`);
+    }
+  }
+
+  async function processLoop(){
+    if(!running)return;
+    if(!canvas||!ctx||video.readyState<HTMLMediaElement.HAVE_CURRENT_DATA){requestAnimationFrame(processLoop);return;}
+    if(processing){requestAnimationFrame(processLoop);return;}
+    processing=true;
+    try{
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.75));
+      if(!blob)throw new Error("Frame conversion gagal");
+      const response=await fetch("/process_frame",{
+        method:"POST",
+        body:blob,
+        headers:{
+          "X-Tracking-Effect":effect,
+          "X-Line-Size":document.getElementById("lineSlider").value,
+          "X-Box-Size":document.getElementById("boxSlider").value,
+          "X-Text-Size":document.getElementById("textSlider").value,
+          "X-Mirror":sourceMode==="camera"?"true":"false"
+        }
+      });
+      if(!response.ok)throw new Error(`Server ${response.status}`);
+      const result=await response.blob();
+      const old=outputUrl;
+      outputUrl=URL.createObjectURL(result);
+      output.onload=()=>{
+        output.style.display="block";
+        if(recordCtx)recordCtx.drawImage(output,0,0,640,360);
+        if(old)URL.revokeObjectURL(old);
+      };
+      output.src=outputUrl;
+    }catch(e){console.error("Frame processing error:",e);}
+    processing=false;
+    if(running)requestAnimationFrame(processLoop);
+  }
+
+  async function updateStats(){
+    if(!running)return;
+    try{
+      const response=await fetch("/stats");
+      if(response.ok){
+        const d=await response.json();
+        document.getElementById("fpsInfo").textContent=Number(d.fps||0).toFixed(1);
+        document.getElementById("faceInfo").textContent=d.face||0;
+        document.getElementById("handInfo").textContent=d.hand||0;
+        document.getElementById("objectInfo").textContent=d.object||0;
+        document.getElementById("fpsSide").textContent=Number(d.fps||0).toFixed(1);
+        document.getElementById("faceSide").textContent=d.face||0;
+        document.getElementById("handSide").textContent=d.hand||0;
+        document.getElementById("objectSide").textContent=d.object||0;
+      }
+    }catch(e){console.error("Stats error:",e);}
+    if(running)statsTimeout=setTimeout(updateStats,700);
+  }
+
+  async function processFullVideo(){
+    if(sourceMode!=="file"||!currentVideoLoaded){alert("Pilih MP4 terlebih dahulu.");return;}
+    if(fullVideoBusy)return;
+    if(!fileInput.files||!fileInput.files[0]){alert("File MP4 tidak ditemukan. Pilih ulang file.");return;}
+    pauseUploadedVideo();
+    running=false;
+    processing=false;
+    if(statsTimeout){clearTimeout(statsTimeout);statsTimeout=null;}
+    fullVideoBusy=true;
+    fullButton.disabled=true;
+    fileInput.disabled=true;
+    recordButton.disabled=true;
+    progressWrap.classList.add("visible");
+    progressBar.style.width="0%";
+    progressPercent.textContent="0%";
+    progressPhase.textContent="QUEUED";
+    progressFrame.textContent="0 / 0 frames";
+    progressTime.textContent="0s";
+    setTracking("PROCESSING");
+    setRecordStatus("PROCESSING VIDEO","processing");
+    try{
+      const fd=new FormData();
+      fd.append("video",fileInput.files[0],fileInput.files[0].name);
+      fd.append("effect",effect);
+      fd.append("line_size",document.getElementById("lineSlider").value);
+      fd.append("box_size",document.getElementById("boxSlider").value);
+      fd.append("text_size",document.getElementById("textSlider").value);
+      const res=await fetch("/process_full_video",{method:"POST",body:fd});
+      const data=await res.json();
+      if(!res.ok||!data.success)throw new Error(data.error||"Gagal memulai proses");
+      fullVideoJobId=data.job_id;
+      pollFullVideoStatus();
+    }catch(e){
+      fullVideoBusy=false;
+      fullButton.disabled=false;
+      fileInput.disabled=false;
+      setRecordStatus("PROCESS FAILED");
+      alert(`Gagal memproses video.\n\n${e.message}`);
+    }
+  }
+
+  function pollFullVideoStatus(){
+    if(!fullVideoJobId)return;
+    clearTimeout(fullVideoStatusTimeout);
+    fetch(`/process_full_video_status/${fullVideoJobId}`)
+      .then(r=>r.json())
+      .then(d=>{
+        if(!d.success)throw new Error(d.error||"Status tidak tersedia");
+        const p=Number(d.progress||0);
+        progressBar.style.width=`${p}%`;
+        progressPercent.textContent=`${p}%`;
+        progressPhase.textContent=d.phase||"PROCESSING";
+        progressFrame.textContent=`${d.current_frame||0} / ${d.total_frames||0} frames`;
+        progressTime.textContent=d.total_frames&&d.fps?formatTime((d.current_frame||0)/d.fps):"processing";
+        if(d.status==="ready"){
+          fullVideoBusy=false;
+          fileInput.disabled=false;
+          fullButton.disabled=false;
+          setRecordStatus("MP4 READY","ready");
+          setTracking("READY");
+          downloadFullVideo(d.filename);
+          return;
+        }
+        if(d.status==="error")throw new Error(d.error||"Video processing gagal");
+        fullVideoStatusTimeout=setTimeout(pollFullVideoStatus,700);
+      })
+      .catch(e=>{
+        fullVideoBusy=false;
+        fileInput.disabled=false;
+        fullButton.disabled=false;
+        setRecordStatus("PROCESS FAILED");
+        alert(`Proses video gagal.\n\n${e.message}`);
+      });
+  }
+
+  async function downloadFullVideo(filename){
+    if(!fullVideoJobId)return;
+    try{
+      const response=await fetch(`/download_processed_video/${fullVideoJobId}`);
+      if(!response.ok){
+        const d=await response.json().catch(()=>({}));
+        throw new Error(d.error||"File hasil tidak bisa diunduh");
+      }
+      const blob=await response.blob();
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;
+      a.download=filename||"blob_tracking_full.mp4";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+      setRecordStatus("MP4 DOWNLOADED","ready");
+      fullVideoJobId=null;
+    }catch(e){
+      setRecordStatus("DOWNLOAD FAILED");
+      alert(`Video sudah selesai diproses tetapi gagal diunduh.\n\n${e.message}`);
+    }
+  }
+
+  function resetFullProgress(){
+    clearTimeout(fullVideoStatusTimeout);
+    fullVideoStatusTimeout=null;
+    progressWrap.classList.remove("visible");
+    progressBar.style.width="0%";
+    progressPercent.textContent="0%";
+    progressPhase.textContent="READY";
+    progressFrame.textContent="0 / 0 frames";
+    progressTime.textContent="0s";
+  }
+
+  function getMime(){
+    if(!window.MediaRecorder)return "";
+    for(const t of ["video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"]){
+      if(MediaRecorder.isTypeSupported(t))return t;
+    }
+    return "";
+  }
+
+  function startRecording(){
+    if(fullVideoBusy){alert("Tunggu proses video selesai.");return;}
+    if(sourceMode==="camera"&&!stream){alert("Buka kamera terlebih dahulu.");return;}
+    if(sourceMode==="file"&&(!currentVideoLoaded||video.paused||video.ended)){alert("Putar video terlebih dahulu.");return;}
+    if(recording)return;
+    initCanvases();
+    recordedChunks=[];
+    if(recordingUrl){URL.revokeObjectURL(recordingUrl);recordingUrl=null;}
+    downloadButton.disabled=true;
+    const rs=recordCanvas.captureStream(30);
+    const mime=getMime();
+    try{mediaRecorder=mime?new MediaRecorder(rs,{mimeType:mime}):new MediaRecorder(rs);}
+    catch(e){alert(e.message);return;}
+    mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size)recordedChunks.push(e.data);};
+    mediaRecorder.onstop=async()=>{
+      if(!recordedChunks.length){setRecordStatus("NO DATA");return;}
+      await convertToMp4(new Blob(recordedChunks,{type:mediaRecorder.mimeType||"video/webm"}));
+    };
+    mediaRecorder.start(1000);
+    recording=true;
+    recordStartTime=Date.now();
+    recordingInterval=setInterval(updateRecordTimer,250);
+    recordButton.disabled=true;
+    stopRecordButton.disabled=false;
+    recordTimerBox.classList.add("active");
+    setRecordStatus("RECORDING","active");
+  }
+
+  function stopRecording(){
+    if(!mediaRecorder||mediaRecorder.state==="inactive")return;
+    recording=false;
+    if(recordingInterval){clearInterval(recordingInterval);recordingInterval=null;}
+    mediaRecorder.stop();
+    recordButton.disabled=false;
+    stopRecordButton.disabled=true;
+    recordTimerBox.classList.remove("active");
+  }
+
+  function updateRecordTimer(){
+    if(!recordStartTime)return;
+    const elapsed=Math.floor((Date.now()-recordStartTime)/1000);
+    recordTimerElement.textContent=`${String(Math.floor(elapsed/60)).padStart(2,"0")}:${String(elapsed%60).padStart(2,"0")}`;
+  }
+
+  async function convertToMp4(webmBlob){
+    converting=true;
+    setRecordStatus("CONVERTING TO MP4...","processing");
+    try{
+      const fd=new FormData();
+      fd.append("video",webmBlob,"blob_tracking.webm");
+      const response=await fetch("/convert_to_mp4",{method:"POST",body:fd});
+      if(!response.ok){
+        const d=await response.json().catch(()=>({}));
+        throw new Error(d.error||"Konversi gagal");
+      }
+      const blob=await response.blob();
+      recordingUrl=URL.createObjectURL(blob);
+      downloadButton.disabled=false;
+      setRecordStatus("MP4 READY","ready");
+    }catch(e){
+      setRecordStatus("CONVERSION FAILED");
+      alert(`Gagal mengubah video ke MP4.\n\n${e.message}`);
+    }finally{converting=false;}
+  }
+
+  function downloadRecording(){
+    if(!recordingUrl){alert("Belum ada MP4 hasil recording.");return;}
+    const a=document.createElement("a");
+    a.href=recordingUrl;
+    a.download=`blob_tracking_${Date.now()}.mp4`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setRecordStatus("MP4 DOWNLOADED","ready");
+  }
+
+  function stopCamera(){
+    if(fullVideoBusy){alert("Tunggu proses video selesai.");return;}
+    if(recording)stopRecording();
+    running=false;
+    processing=false;
+    if(statsTimeout){clearTimeout(statsTimeout);statsTimeout=null;}
+    if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+    video.pause();
+    video.srcObject=null;
+    if(sourceMode==="camera"){
+      video.removeAttribute("src");
+      video.load();
+      placeholder.style.display="flex";
+      placeholderText.textContent="Camera is not running";
+      output.style.display="none";
+      recordButton.disabled=true;
+      document.getElementById("statusDot").classList.remove("active");
+      document.getElementById("statusText").textContent="CAMERA OFFLINE";
+      setTracking("IDLE");
+    }
+  }
+
+  playVideoButton.addEventListener("click",playUploadedVideo);
+  pauseVideoButton.addEventListener("click",pauseUploadedVideo);
+  restartVideoButton.addEventListener("click",restartUploadedVideo);
+  fullButton.addEventListener("click",processFullVideo);
+  recordButton.addEventListener("click",startRecording);
+  stopRecordButton.addEventListener("click",stopRecording);
+  downloadButton.addEventListener("click",downloadRecording);
+  openCameraButton.addEventListener("click",openCamera);
+  resetOverlayButton.addEventListener("click",resetSettings);
+
+  window.selectSourceMode=function(mode){
+    if(mode==="file")switchToFileMode();
+    else switchToCameraMode();
+  };
+  window.openCamera=openCamera;
+  window.processFullVideo=processFullVideo;
+  window.playUploadedVideo=playUploadedVideo;
+  window.pauseUploadedVideo=pauseUploadedVideo;
+  window.restartUploadedVideo=restartUploadedVideo;
+  window.startRecording=startRecording;
+  window.stopRecording=stopRecording;
+  window.downloadRecording=downloadRecording;
+  window.resetSettings=resetSettings;
+
+  window.addEventListener("beforeunload",()=>{
+    try{navigator.sendBeacon("/shutdown");}catch(e){}
+  });
+
+  switchToCameraMode();
+  setRecordStatus("READY");
+})();
+</script>
+</body>
+</html>
+

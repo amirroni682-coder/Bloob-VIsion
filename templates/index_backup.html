@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>BLOB TRACKING</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            background:
+                radial-gradient(
+                    circle at 50% 0%,
+                    #17232b 0%,
+                    #0b0f13 45%,
+                    #07090c 100%
+                );
+
+            color: white;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            min-height: 100vh;
+        }
+
+
+        /* ==================================================
+           MAIN
+        ================================================== */
+
+        .app {
+
+            display: flex;
+
+            min-height: 100vh;
+        }
+
+
+        /* ==================================================
+           SIDEBAR
+        ================================================== */
+
+        .sidebar {
+
+            width: 250px;
+
+            min-width: 250px;
+
+            background:
+                rgba(
+                    7,
+                    12,
+                    16,
+                    0.96
+                );
+
+            border-right:
+                1px solid
+                rgba(
+                    80,
+                    220,
+                    255,
+                    0.15
+                );
+
+            padding: 25px 18px;
+
+            display: flex;
+
+            flex-direction: column;
+        }
+
+
+        .brand {
+
+            font-size: 21px;
+
+            font-weight: 700;
+
+            letter-spacing: 3px;
+
+            color:
+                rgb(
+                    80,
+                    220,
+                    255
+                );
+
+            margin-bottom: 35px;
+        }
+
+
+        .menu-title {
+
+            font-size: 10px;
+
+            letter-spacing: 2px;
+
+            color: #68747d;
+
+            margin:
+                20px
+                0
+                10px
+                10px;
+        }
+
+
+        .menu-button {
+
+            width: 100%;
+
+            border: 1px solid
+                rgba(
+                    80,
+                    220,
+                    255,
+                    0.18
+                );
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.025
+                );
+
+            color: #c7d0d5;
+
+            padding: 13px 14px;
+
+            border-radius: 8px;
+
+            text-align: left;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+
+            margin-bottom: 7px;
+        }
+
+
+        .menu-button:hover {
+
+            border-color:
+                rgba(
+                    80,
+                    220,
+                    255,
+                    0.55
+                );
+
+            color: white;
+
+            background:
+                rgba(
+                    80,
+                    220,
+                    255,
+                    0.06
+                );
+        }
+
+
+        .menu-button.active {
+
+            border-color:
+                rgba(
+                    80,
+                    220,
+                    255,
+                    0.7
+                );
+
+            color:
+                rgb(
+                    80,
+                    220,
+                    255
+                );
+
+            background:
+                rgba(
+                    80,
+                    220,
+                    255,
+                    0.08
+                );
+        }
+
+
+        /* ==================================================
+           EFFECT
+        ================================================== */
+
+        .effect-box {
+
+            padding:
+                12px
+                10px;
+        }
+
+
+        .effect-option {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            margin-bottom: 11px;
+
+            font-size: 13px;
+
+            color: #aeb8be;
+
+            cursor: pointer;
+        }
+
+
+        .effect-option input {
+
+            accent-color:
+                rgb(
+                    80,
+                    220,
+                    255
+                );
+        }
+
+
+        /* ==================================================
+           MAIN AREA
+        ================================================== */
+
+        .main {
+
+            flex: 1;
+
+            padding: 24px;
+
+            min-width: 0;
+        }
+
+
+        .topbar {
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+
+        .page-title {
+
+            font-size: 24px;
+
+            font-weight: 600;
+
+            letter-spacing: 1px;
+        }
+
+
+        .status {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            font-size: 11px;
+
+            color: #87939a;
+
+            letter-spacing: 1px;
+        }
+
+
+        .status-dot {
+
+            width: 8px;
+
+            height: 8px;
+
+            border-radius: 50%;
+
+            background: #777;
+
+            box-shadow:
+                0 0 8px
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.15
+                );
+        }
+
+
+        .status-dot.online {
+
+            background:
+                rgb(
+                    80,
+                    255,
+                    170
+                );
+
+            box-shadow:
+                0 0 10px
+                rgba(
+                    80,
+                    255,
+                    170,
+                    0.7
+                );
+        }
+
+
+        /* ==================================================
+           CONTENT
+        ================================================== */
+
+        .content {
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr)
+                280px;
+
+            gap: 18px;
+        }
+
+
+        /* ==================================================
+           CAMERA
+        ================================================== */
+
+        .camera-card {
+
+            background:
+                rgba(
+                    8,
+                    13,
+                    17,
+                    0.85
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.08
+                );
+
+            border-radius: 12px;
+
+            overflow: hidden;
+
+            min-height: 500px;
+        }
+
+
+        .camera-header {
+
+            height: 48px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content:
+                space-between;
+
+            padding:
+                0
+                16px;
+
+            border-bottom:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.07
+                );
+
+            color: #aab4ba;
+
+            font-size: 12px;
+
+            letter-spacing: 1px;
+        }
+
+
+        .camera-stage {
+
+            position: relative;
+
+            width: 100%;
+
+            aspect-ratio: 16 / 9;
+
+            background: #05070a;
+
+            overflow: hidden;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+
+        #cameraVideo {
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: cover;
+
+            display: block;
+
+            transform:
+                scaleX(-1);
+        }
+
+
+        #trackingOutput {
+
+            position: absolute;
+
+            inset: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: cover;
+
+            display: none;
+        }
+
+
+        .camera-placeholder {
+
+            position: absolute;
+
+            inset: 0;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: #56626a;
+
+            pointer-events: none;
+        }
+
+
+        .camera-placeholder.hidden {
+
+            display: none;
+        }
+
+
+        .camera-icon {
+
+            font-size: 42px;
+
+            margin-bottom: 12px;
+
+            opacity: 0.45;
+        }
+
+
+        .camera-placeholder-text {
+
+            font-size: 12px;
+
+            letter-spacing: 1px;
+        }
+
+
+        /* ==================================================
+           BUTTON
+        ================================================== */
+
+        .camera-controls {
+
+            padding: 15px;
+
+            border-top:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.06
+                );
+
+            display: flex;
+
+            gap: 10px;
+        }
+
+
+        .primary-button {
+
+            border: 1px solid
+                rgb(
+                    80,
+                    220,
+                    255
+                );
+
+            background:
+                rgba(
+                    80,
+                    220,
+                    255,
+                    0.08
+                );
+
+            color:
+                rgb(
+                    120,
+                    230,
+                    255
+                );
+
+            padding:
+                11px
+                18px;
+
+            border-radius: 7px;
+
+            cursor: pointer;
+
+            font-size: 11px;
+
+            letter-spacing: 1px;
+
+            transition: 0.2s;
+        }
+
+
+        .primary-button:hover {
+
+            background:
+                rgba(
+                    80,
+                    220,
+                    255,
+                    0.16
+                );
+        }
+
+
+        .primary-button:disabled {
+
+            opacity: 0.35;
+
+            cursor: not-allowed;
+        }
+
+
+        .stop-button {
+
+            border-color:
+                rgba(
+                    255,
+                    90,
+                    110,
+                    0.6
+                );
+
+            color:
+                #ff7d8d;
+
+            background:
+                rgba(
+                    255,
+                    90,
+                    110,
+                    0.05
+                );
+        }
+
+
+        /* ==================================================
+           RIGHT PANEL
+        ================================================== */
+
+        .info-card {
+
+            background:
+                rgba(
+                    8,
+                    13,
+                    17,
+                    0.85
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.08
+                );
+
+            border-radius: 12px;
+
+            padding: 18px;
+
+            height: fit-content;
+        }
+
+
+        .info-title {
+
+            font-size: 11px;
+
+            letter-spacing: 2px;
+
+            color:
+                rgb(
+                    80,
+                    220,
+                    255
+                );
+
+            margin-bottom: 18px;
+        }
+
+
+        .info-row {
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            padding:
+                10px
+                0;
+
+            border-bottom:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.05
+                );
+
+            font-size: 12px;
+        }
+
+
+        .info-row:last-child {
+
+            border-bottom: none;
+        }
+
+
+        .info-label {
+
+            color: #69757d;
+        }
+
+
+        .info-value {
+
+            color: #d8e0e4;
+
+            font-family:
+                monospace;
+        }
+
+
+        /* ==================================================
+           FOOTER METRICS
+        ================================================== */
+
+        .metrics {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 10px;
+
+            margin-top: 18px;
+        }
+
+
+        .metric {
+
+            background:
+                rgba(
+                    8,
+                    13,
+                    17,
+                    0.8
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.07
+                );
+
+            border-radius: 9px;
+
+            padding: 13px;
+        }
+
+
+        .metric-label {
+
+            font-size: 9px;
+
+            letter-spacing: 1.5px;
+
+            color: #68747d;
+
+            margin-bottom: 5px;
+        }
+
+
+        .metric-value {
+
+            font-size: 18px;
+
+            font-family:
+                monospace;
+
+            color:
+                rgb(
+                    80,
+                    220,
+                    255
+                );
+        }
+
+
+        /* ==================================================
+           RESPONSIVE
+        ================================================== */
+
+        @media (
+            max-width: 900px
+        ) {
+
+            .sidebar {
+
+                width: 200px;
+
+                min-width: 200px;
+            }
+
+            .content {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+            .info-card {
+
+                display: none;
+            }
+        }
+
+
+        @media (
+            max-width: 650px
+        ) {
+
+            .app {
+
+                flex-direction: column;
+            }
+
+            .sidebar {
+
+                width: 100%;
+
+                min-width: 0;
+
+                border-right: none;
+
+                border-bottom:
+                    1px solid
+                    rgba(
+                        80,
+                        220,
+                        255,
+                        0.15
+                    );
+            }
+
+            .main {
+
+                padding: 12px;
+            }
+
+            .metrics {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+            BLOB TRACKING
+        </div>
+
+
+        <div class="menu-title">
+            CAMERA
+        </div>
+
+
+        <button
+            class="menu-button active"
+            id="livecamMenu"
+        >
+            ◉ &nbsp; Open Livecam
+        </button>
+
+
+        <div class="menu-title">
+            TRACKING
+        </div>
+
+
+        <div class="effect-box">
+
+            <label class="effect-option">
+
+                <input
+                    type="radio"
+                    name="effect"
+                    value="low"
+                >
+
+                Low
+
+            </label>
+
+
+            <label class="effect-option">
+
+                <input
+                    type="radio"
+                    name="effect"
+                    value="medium"
+                    checked
+                >
+
+                Medium
+
+            </label>
+
+
+            <label class="effect-option">
+
+                <input
+                    type="radio"
+                    name="effect"
+                    value="high"
+                >
+
+                High
+
+            </label>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main class="main">
+
+
+        <div class="topbar">
+
+            <div class="page-title">
+                Live Tracking
+            </div>
+
+
+            <div class="status">
+
+                <span
+                    class="status-dot"
+                    id="statusDot"
+                ></span>
+
+                <span id="statusText">
+                    OFFLINE
+                </span>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="content">
+
+
+            <!-- =================================================
+                 CAMERA CARD
+            ================================================== -->
+
+            <section class="camera-card">
+
+
+                <div class="camera-header">
+
+                    <span>
+                        LIVE CAMERA
+                    </span>
+
+                    <span id="cameraStatus">
+                        READY
+                    </span>
+
+                </div>
+
+
+                <div class="camera-stage">
+
+
+                    <video
+                        id="cameraVideo"
+                        autoplay
+                        playsinline
+                        muted
+                    ></video>
+
+
+                    <img
+                        id="trackingOutput"
+                        alt="Tracking output"
+                    >
+
+
+                    <div
+                        class="camera-placeholder"
+                        id="cameraPlaceholder"
+                    >
+
+                        <div class="camera-icon">
+                            ◉
+                        </div>
+
+                        <div class="camera-placeholder-text">
+                            CAMERA NOT ACTIVE
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="camera-controls">
+
+                    <button
+                        class="primary-button"
+                        id="openCamera"
+                    >
+                        OPEN LIVECAM
+                    </button>
+
+
+                    <button
+                        class="primary-button stop-button"
+                        id="stopCamera"
+                        disabled
+                    >
+                        STOP
+                    </button>
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 STATUS PANEL
+            ================================================== -->
+
+            <aside class="info-card">
+
+                <div class="info-title">
+                    TRACKING STATUS
+                </div>
+
+
+                <div class="info-row">
+
+                    <span class="info-label">
+                        Engine
+                    </span>
+
+                    <span
+                        class="info-value"
+                        id="engineStatus"
+                    >
+                        READY
+                    </span>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span class="info-label">
+                        Camera
+                    </span>
+
+                    <span
+                        class="info-value"
+                        id="cameraInfo"
+                    >
+                        OFF
+                    </span>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span class="info-label">
+                        Tracking
+                    </span>
+
+                    <span
+                        class="info-value"
+                        id="trackingInfo"
+                    >
+                        OFF
+                    </span>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span class="info-label">
+                        Effect
+                    </span>
+
+                    <span
+                        class="info-value"
+                        id="effectInfo"
+                    >
+                        MEDIUM
+                    </span>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             METRICS
+        ====================================================== -->
+
+        <div class="metrics">
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    FPS
+                </div>
+
+                <div
+                    class="metric-value"
+                    id="fpsValue"
+                >
+                    --
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    FACE
+                </div>
+
+                <div
+                    class="metric-value"
+                    id="faceValue"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    HAND
+                </div>
+
+                <div
+                    class="metric-value"
+                    id="handValue"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    OBJECT
+                </div>
+
+                <div
+                    class="metric-value"
+                    id="objectValue"
+                >
+                    0
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </main>
+
+</div>
+
+
+
+<script>
+
+    // =========================================================
+    // ELEMENTS
+    // =========================================================
+
+    const video =
+        document.getElementById(
+            "cameraVideo"
+        );
+
+    const trackingOutput =
+        document.getElementById(
+            "trackingOutput"
+        );
+
+    const openCameraButton =
+        document.getElementById(
+            "openCamera"
+        );
+
+    const stopCameraButton =
+        document.getElementById(
+            "stopCamera"
+        );
+
+    const cameraPlaceholder =
+        document.getElementById(
+            "cameraPlaceholder"
+        );
+
+    const statusDot =
+        document.getElementById(
+            "statusDot"
+        );
+
+    const statusText =
+        document.getElementById(
+            "statusText"
+        );
+
+    const cameraStatus =
+        document.getElementById(
+            "cameraStatus"
+        );
+
+    const engineStatus =
+        document.getElementById(
+            "engineStatus"
+        );
+
+    const cameraInfo =
+        document.getElementById(
+            "cameraInfo"
+        );
+
+    const trackingInfo =
+        document.getElementById(
+            "trackingInfo"
+        );
+
+    const effectInfo =
+        document.getElementById(
+            "effectInfo"
+        );
+
+    const fpsValue =
+        document.getElementById(
+            "fpsValue"
+        );
+
+    const faceValue =
+        document.getElementById(
+            "faceValue"
+        );
+
+    const handValue =
+        document.getElementById(
+            "handValue"
+        );
+
+    const objectValue =
+        document.getElementById(
+            "objectValue"
+        );
+
+
+    // =========================================================
+    // STATE
+    // =========================================================
+
+    let cameraStream = null;
+
+    let trackingRunning = false;
+
+    let processing = false;
+
+    let animationFrame = null;
+
+    let hiddenCanvas = null;
+
+    let hiddenContext = null;
+
+    let previousOutputURL = null;
+
+
+    // =========================================================
+    // EFFECT
+    // =========================================================
+
+    const effectRadios =
+        document.querySelectorAll(
+            'input[name="effect"]'
+        );
+
+
+    effectRadios.forEach(
+        radio => {
+
+            radio.addEventListener(
+                "change",
+                () => {
+
+                    effectInfo.textContent =
+                        radio.value.toUpperCase();
+
+                }
+            );
+
+        }
+    );
+
+
+    // =========================================================
+    // OPEN CAMERA
+    // =========================================================
+
+    async function openCamera() {
+
+        try {
+
+            cameraStatus.textContent =
+                "REQUESTING CAMERA";
+
+            statusText.textContent =
+                "CONNECTING";
+
+
+            cameraStream =
+                await navigator
+                    .mediaDevices
+                    .getUserMedia({
+
+                        video: {
+
+                            width: {
+                                ideal: 1280
+                            },
+
+                            height: {
+                                ideal: 720
+                            },
+
+                            facingMode:
+                                "user"
+
+                        },
+
+                        audio: false
+
+                    });
+
+
+            video.srcObject =
+                cameraStream;
+
+
+            await video.play();
+
+
+            // -------------------------------------------------
+            // UI
+            // -------------------------------------------------
+
+            cameraPlaceholder
+                .classList
+                .add("hidden");
+
+
+            statusDot
+                .classList
+                .add("online");
+
+
+            statusText.textContent =
+                "ONLINE";
+
+
+            cameraStatus.textContent =
+                "CAMERA ACTIVE";
+
+
+            cameraInfo.textContent =
+                "ON";
+
+
+            engineStatus.textContent =
+                "LOADED";
+
+
+            trackingInfo.textContent =
+                "STARTING";
+
+
+            openCameraButton.disabled =
+                true;
+
+
+            stopCameraButton.disabled =
+                false;
+
+
+            // -------------------------------------------------
+            // RESET PYTHON TRACKING
+            // -------------------------------------------------
+
+            await fetch(
+                "/reset_tracking",
+                {
+                    method: "POST"
+                }
+            );
+
+
+            // -------------------------------------------------
+            // CANVAS
+            // -------------------------------------------------
+
+            hiddenCanvas =
+                document.createElement(
+                    "canvas"
+                );
+
+            hiddenContext =
+                hiddenCanvas.getContext(
+                    "2d"
+                );
+
+
+            trackingRunning = true;
+
+            trackingInfo.textContent =
+                "ACTIVE";
+
+
+            // -------------------------------------------------
+            // START LOOP
+            // -------------------------------------------------
+
+            trackingLoop();
+
+
+        }
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+            alert(
+                "Kamera tidak bisa dibuka.\n\n" +
+                error.message
+            );
+
+            stopCamera();
+
+        }
+
+    }
+
+
+    // =========================================================
+    // TRACKING LOOP
+    // =========================================================
+
+    function trackingLoop() {
+
+        if (!trackingRunning) {
+
+            return;
+
+        }
+
+
+        if (
+            !video.videoWidth ||
+            !video.videoHeight
+        ) {
+
+            animationFrame =
+                requestAnimationFrame(
+                    trackingLoop
+                );
+
+            return;
+
+        }
+
+
+        // -----------------------------------------------------
+        // Jangan kirim frame baru kalau Python masih
+        // memproses frame sebelumnya.
+        // -----------------------------------------------------
+
+        if (processing) {
+
+            animationFrame =
+                requestAnimationFrame(
+                    trackingLoop
+                );
+
+            return;
+
+        }
+
+
+        processing = true;
+
+
+        // -----------------------------------------------------
+        // Ukuran pengiriman
+        //
+        // Kita turunkan menjadi 640x360 agar:
+        // - browser lebih ringan
+        // - Flask lebih ringan
+        // - YOLO lebih ringan
+        // - tracking lebih cepat
+        // -----------------------------------------------------
+
+        const targetWidth = 640;
+
+        const targetHeight = 360;
+
+
+        hiddenCanvas.width =
+            targetWidth;
+
+        hiddenCanvas.height =
+            targetHeight;
+
+
+        hiddenContext.drawImage(
+            video,
+            0,
+            0,
+            targetWidth,
+            targetHeight
+        );
+
+
+        hiddenCanvas.toBlob(
+            async function(blob) {
+
+                try {
+
+                    if (!blob) {
+
+                        processing = false;
+
+                        return;
+
+                    }
+
+
+                    const response =
+                        await fetch(
+                            "/process_frame",
+                            {
+
+                                method:
+                                    "POST",
+
+                                headers: {
+
+                                    "Content-Type":
+                                        "image/jpeg"
+
+                                },
+
+                                body:
+                                    blob
+
+                            }
+                        );
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            "Server returned " +
+                            response.status
+                        );
+
+                    }
+
+
+                    const outputBlob =
+                        await response.blob();
+
+
+                    const outputURL =
+                        URL.createObjectURL(
+                            outputBlob
+                        );
+
+
+                    // ------------------------------------------------
+                    // SHOW TRACKING RESULT
+                    // ------------------------------------------------
+
+                    trackingOutput.src =
+                        outputURL;
+
+
+                    trackingOutput.style.display =
+                        "block";
+
+
+                    video.style.display =
+                        "none";
+
+
+                    // ------------------------------------------------
+                    // CLEAN PREVIOUS URL
+                    // ------------------------------------------------
+
+                    if (
+                        previousOutputURL
+                    ) {
+
+                        URL.revokeObjectURL(
+                            previousOutputURL
+                        );
+
+                    }
+
+
+                    previousOutputURL =
+                        outputURL;
+
+
+                }
+                catch (error) {
+
+                    console.error(
+                        "Tracking error:",
+                        error
+                    );
+
+                }
+                finally {
+
+                    processing = false;
+
+                    animationFrame =
+                        requestAnimationFrame(
+                            trackingLoop
+                        );
+
+                }
+
+            },
+
+            "image/jpeg",
+
+            0.70
+
+        );
+
+    }
+
+
+    // =========================================================
+    // STOP CAMERA
+    // =========================================================
+
+    function stopCamera() {
+
+        trackingRunning = false;
+
+        processing = false;
+
+
+        if (animationFrame) {
+
+            cancelAnimationFrame(
+                animationFrame
+            );
+
+            animationFrame = null;
+
+        }
+
+
+        if (cameraStream) {
+
+            cameraStream
+                .getTracks()
+                .forEach(
+                    track => track.stop()
+                );
+
+            cameraStream = null;
+
+        }
+
+
+        video.srcObject = null;
+
+
+        video.style.display =
+            "block";
+
+
+        trackingOutput.style.display =
+            "none";
+
+
+        if (previousOutputURL) {
+
+            URL.revokeObjectURL(
+                previousOutputURL
+            );
+
+            previousOutputURL = null;
+
+        }
+
+
+        statusDot
+            .classList
+            .remove("online");
+
+
+        statusText.textContent =
+            "OFFLINE";
+
+
+        cameraStatus.textContent =
+            "READY";
+
+
+        cameraInfo.textContent =
+            "OFF";
+
+
+        trackingInfo.textContent =
+            "OFF";
+
+
+        engineStatus.textContent =
+            "READY";
+
+
+        cameraPlaceholder
+            .classList
+            .remove("hidden");
+
+
+        openCameraButton.disabled =
+            false;
+
+
+        stopCameraButton.disabled =
+            true;
+
+
+        fpsValue.textContent =
+            "--";
+
+
+        faceValue.textContent =
+            "0";
+
+
+        handValue.textContent =
+            "0";
+
+
+        objectValue.textContent =
+            "0";
+
+    }
+
+
+    // =========================================================
+    // BUTTONS
+    // =========================================================
+
+    openCameraButton.addEventListener(
+        "click",
+        openCamera
+    );
+
+
+    stopCameraButton.addEventListener(
+        "click",
+        stopCamera
+    );
+
+
+    // =========================================================
+    // CLEANUP
+    // =========================================================
+
+    window.addEventListener(
+        "beforeunload",
+        () => {
+
+            stopCamera();
+
+            fetch(
+                "/shutdown",
+                {
+                    method: "POST",
+                    keepalive: true
+                }
+            );
+
+        }
+    );
+
+</script>
+
+
+</body>
+
+</html>
